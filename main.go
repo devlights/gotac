@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 )
 
@@ -10,9 +9,7 @@ func main() {
 	args := NewArgs()
 
 	err := args.Parse()
-	if err != nil {
-		log.Fatal(err)
-	}
+	logErr(err, true)
 
 	defer args.RemoveTempFileAtExit()
 
