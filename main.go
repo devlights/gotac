@@ -14,7 +14,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	args.RemoveTempFileAtExit()
+	defer args.RemoveTempFileAtExit()
 
 	for _, filePath := range args.TargetFiles {
 		command := NewTacCommand()
