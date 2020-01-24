@@ -52,9 +52,9 @@ func (t *TacCommand) Run(args *TacArgs) error {
 		return err
 	}
 
-	t.offset = o
-
+	t.setOffset(o)
 	t.newBuffer()
+
 	for {
 		buf := make([]byte, 1)
 
@@ -113,6 +113,10 @@ func (t *TacCommand) reverse() {
 	for i, j := 0, len(t.buffer)-1; i < j; i, j = i+1, j-1 {
 		t.buffer[i], t.buffer[j] = t.buffer[j], t.buffer[i]
 	}
+}
+
+func (t *TacCommand) setOffset(offset int64) {
+	t.offset = offset
 }
 
 func (t *TacCommand) backOffset() {
