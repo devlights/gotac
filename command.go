@@ -19,12 +19,13 @@ type (
 	TacCommand struct {
 		offset    int64
 		firstTime bool
+		buffer    []byte
 	}
 )
 
 func NewTacCommand() *TacCommand {
 	c := new(TacCommand)
-	c.firstTime = true
+	c.setFirstTime(true)
 	return c
 }
 
@@ -53,16 +54,16 @@ func (t *TacCommand) Run(args *TacArgs) error {
 
 	t.offset = o
 
-	data := t.newBuffer()
+	t.newBuffer()
 	for {
 		buf := make([]byte, 1)
 
 		_, err := f.ReadAt(buf, t.offset)
 		if err != nil {
-			data = data[:len(data)]
-			t.reverse(data)
+			t.adjustBuffer()
+			t.reverse()
 
-			pl(os.Stdout, string(data))
+			pl(os.Stdout, string(t.buffer))
 			break
 		}
 
@@ -71,19 +72,19 @@ func (t *TacCommand) Run(args *TacArgs) error {
 		if b == '\n' {
 			if t.firstTime {
 				// drop first newline
-				t.firstTime = false
+				t.setFirstTime(false)
 				t.backOffset()
 				continue
 			}
 
-			data = data[:len(data)]
-			t.reverse(data)
+			t.adjustBuffer()
+			t.reverse()
 
-			pl(os.Stdout, string(data))
-			data = t.newBuffer()
+			pl(os.Stdout, string(t.buffer))
+			t.newBuffer()
 		} else {
-			data = append(data, b)
-			t.firstTime = false
+			t.addData(b)
+			t.setFirstTime(false)
 		}
 
 		t.backOffset()
@@ -92,13 +93,25 @@ func (t *TacCommand) Run(args *TacArgs) error {
 	return nil
 }
 
-func (t *TacCommand) newBuffer() []byte {
-	return make([]byte, 0, BufferSize)
+func (t *TacCommand) setFirstTime(isFirstTime bool) {
+	t.firstTime = isFirstTime
 }
 
-func (t *TacCommand) reverse(data []byte) {
-	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
-		data[i], data[j] = data[j], data[i]
+func (t *TacCommand) newBuffer() {
+	t.buffer = make([]byte, 0, BufferSize)
+}
+
+func (t *TacCommand) adjustBuffer() {
+	t.buffer = t.buffer[:len(t.buffer)]
+}
+
+func (t *TacCommand) addData(b byte) {
+	t.buffer = append(t.buffer, b)
+}
+
+func (t *TacCommand) reverse() {
+	for i, j := 0, len(t.buffer)-1; i < j; i, j = i+1, j-1 {
+		t.buffer[i], t.buffer[j] = t.buffer[j], t.buffer[i]
 	}
 }
 

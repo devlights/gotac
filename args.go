@@ -35,11 +35,11 @@ func (a *Args) Parse() error {
 	return nil
 }
 
-func (a *Args) RemoveTempFileAtExit() {
+func (a *Args) RemoveTempFile() {
 	if a.IsStdin {
 		if len(a.TargetFiles) > 0 {
 			f := a.TargetFiles[0]
-			defer safeRemove(f)
+			safeRemove(f)
 		}
 	}
 }
